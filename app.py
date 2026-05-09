@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
@@ -28,7 +28,7 @@ def get_chunks(text):
 
 def get_vectorstore(chunks):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vectorstore = Chroma.from_documents(chunks, embeddings)
+    vectorstore = FAISS.from_documents(chunks, embeddings)
     return vectorstore
 
 def get_chain(vectorstore):
@@ -57,7 +57,7 @@ Answer:""")
     )
     return chain, retriever
 
-st.title("RAG Research Agent")
+st.title("📄 RAG Research Agent")
 st.caption("Upload PDFs and ask questions about them")
 
 uploaded_files = st.file_uploader(
@@ -78,7 +78,7 @@ if uploaded_files:
             st.session_state.vectorstore = get_vectorstore(chunks)
             st.session_state.chain, st.session_state.retriever = get_chain(st.session_state.vectorstore)
 
-        st.success(f"{len(chunks)} chunks ready! Ask anything below.")
+        st.success(f"✅ {len(chunks)} chunks ready! Ask anything below.")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -102,7 +102,7 @@ if prompt := st.chat_input("Ask about your documents..."):
 
             st.write(answer)
 
-            with st.expander("Source chunks used"):
+            with st.expander("📚 Source chunks used"):
                 for i, doc in enumerate(sources):
                     st.markdown(f"**Chunk {i+1}:**")
                     st.write(doc.page_content)
